@@ -1,0 +1,51 @@
+# IMPORT LIBRARY
+from tensorflow.keras.datasets import cifar100 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from tensorflow.keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.optimizers import RMSprop
+from skimage import color
+
+#LOAD DATA 
+(x_train,y_train),(x_test,y_test) = cifar100.load_data()
+
+# CREATE CLASSES
+classes = ['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
+
+# Convert RGB to Grayscale
+x_train = color.rgb2gray(x_train)
+x_test = color.rgb2gray(x_test)
+
+y_test = y_test.reshape(-1)
+y_train = y_train.reshape(-1)
+
+x_train = x_train.reshape(50000,1024) 
+x_test = x_test.reshape(10000,1024)
+
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+x_train/= 255 
+x_test/= 255
+
+y_train = to_categorical(y_train,100) 
+y_test = to_categorical(y_test,100)
+
+# Model ANN
+model = Sequential()
+model.add(Dense(1024, activation ='relu', input_shape = (1024,)))
+model.add(Dropout(0.2))
+model.add(Dense(512, activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(Dense(256, activation = 'relu'))
+model.add(Dropout(0.2))
+model.add(Dense(512, activation = 'relu'))
+model.add(Dropout(0.1))
+model.add(Dense(100, activation = 'softmax'))
+model.add(Dropout(0.1))
+
+model.summary()
+model.compile( loss= 'categorical_crossentropy' , optimizer = RMSprop(), metrics = ['accuracy']) 
+history = model.fit(x_train, y_train, batch_size = 128, epochs = 200, verbose = 1, validation_data = (x_test, y_test))
