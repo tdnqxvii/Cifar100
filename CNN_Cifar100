@@ -1,0 +1,59 @@
+# IMPORT LIBRARY
+from tensorflow.keras.datasets import cifar100 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from tensorflow.keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.optimizers import RMSprop
+from skimage import color
+
+#LOAD DATA 
+(x_train,y_train),(x_test,y_test) = cifar100.load_data()
+
+# CREATE CLASSES
+classes = ['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
+
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+x_train/= 255 
+x_test/= 255
+
+y_train = to_categorical(y_train,100) 
+y_test = to_categorical(y_test,100)
+
+model = Sequential()
+# BLOCK 1
+model.add(Conv2D(64,(3,3), activation='relu',kernel_initializer = 'he_uniform', padding ='same' ,input_shape =(32,32,3)))
+model.add(Conv2D(64,(3,3), activation='relu',kernel_initializer = 'he_uniform', padding ='same'))
+model.add(MaxPooling2D(2,2))
+
+# BLOCK 2
+model.add(Conv2D(128,(3,3), activation='relu',kernel_initializer = 'he_uniform', padding ='same'))
+model.add(Conv2D(128,(3,3), activation='relu',kernel_initializer = 'he_uniform', padding ='same'))
+model.add(MaxPooling2D(2,2))
+
+# Add ANN
+model.add(Flatten())
+model.add(Dense(512,activation = 'relu', kernel_initializer = 'he_uniform'))
+model.add(Dense(512,activation = 'relu', kernel_initializer = 'he_uniform'))
+model.add(Dense(100,activation = 'softmax'))
+opt = SGD(lr= 0.01, momentum = 0.9)
+
+model.compile(loss = 'categorical_crossentropy', optimizer = opt, metrics = ['accuracy'])
+
+history = model.fit(x_train, y_train, epochs = 50, batch_size = 128, validation_data = (x_test,y_test), verbose = 1)
+
+filename = 'Tiger.JPG'
+
+# ADD IMAGE TO TEST
+img = load_img(filename, target_size =(32,32))
+plt.imshow(img)
+img  = img_to_array(img)
+img  = img.reshape(1,32,32,3)
+img = img.astype('float32')
+img = img/255
+
+label = int(np.argmax(model.predict(img), axis = 1))
+classes[label]
